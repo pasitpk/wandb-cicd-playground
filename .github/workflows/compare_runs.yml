@@ -33,7 +33,7 @@ jobs:
       steps:
 
       - name: show event detail
-        run: echo "${{github.event}}"
+        run: echo "${{toJSON(github.event)}}"
       
       - name: filter for wandb command
         id: filter

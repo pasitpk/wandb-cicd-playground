@@ -56,4 +56,4 @@ if __name__ == "__main__":
     report.save()
 
     with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-        print(f'REPORT_URL={report.url}', file=f)
+        print(f'WANDB_REPORT_URL={report.url}', file=f)

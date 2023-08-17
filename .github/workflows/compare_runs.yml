@@ -49,8 +49,14 @@ jobs:
             else:
               print(f'VAL_FOUND=false', file=f)
 
-      - name: Create report for comparison
+      - uses: actions/checkout@v3
+      - name: install dependencies
         if:  steps.get-wandb-value.outcome == 'success' && steps.get-wandb-value.outputs.VAL_FOUND == 'true'
+        id: install-dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create report for comparison
+        if:  steps.install-dependencies.outcome == 'success'
         id: create-report
         env:
           WANDB_RUN_ID: ${{ steps.get-wandb-value.outputs.WANDB_VAL }}

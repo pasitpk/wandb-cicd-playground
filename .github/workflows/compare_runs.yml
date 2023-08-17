@@ -123,7 +123,7 @@ jobs:
                 body: msg
               })
         env:
-          WANDB_VAL: "${{ steps.get-magic-value.outputs.WANDB_VAL }}"
-          WANDB_REPORT_URL: "${{ steps.get-magic-value.outputs.WANDB_REPORT_URL }}"
+          WANDB_VAL: "${{ steps.get-wandb-value.outputs.WANDB_VAL }}"
+          WANDB_REPORT_URL: "${{ steps.create-report.outputs.WANDB_REPORT_URL }}"
         
           

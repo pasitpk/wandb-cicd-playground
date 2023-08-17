@@ -15,7 +15,7 @@ jobs:
 
   compare-runs:
       # this filters for only comments made on a pull request
-      if: (github.event.issue.pull_request != null)
+      if: github.event.issue.pull_request || (github.event_name == 'pull_request')
 
       runs-on: ubuntu-latest
 

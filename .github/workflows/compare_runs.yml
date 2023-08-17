@@ -79,7 +79,7 @@ jobs:
         id: create-comment-with-report-url
         with:
           script: |
-            var msg = `👋 Hello!  You commented on this PR with a wandb value of \`${process.env.WANDB_VAL}\` \nHere is the <a href="${process.env.WANDB_REPORT_URL}" target="_blank" rel="noopener noreferrer">link to the report</a>.`
+            var msg = `👋 Hello!  You commented on this PR with a wandb value of \`${process.env.WANDB_VAL}\` \nHere is the <a href="${process.env.WANDB_REPORT_URL}" target="_blank">link to the report</a>.`
             github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,

@@ -14,8 +14,8 @@ permissions:
 jobs:
 
   compare-runs:
-      # this filters for only comments made on a pull request
-      if: github.event.issue.pull_request || (github.event_name == 'pull_request')
+  
+      # if: github.event.issue.pull_request || (github.event_name == 'pull_request')
 
       runs-on: ubuntu-latest
 
@@ -31,6 +31,9 @@ jobs:
         PR_COMMENT: ${{ github.event.comment.body }}
 
       steps:
+
+      - name: show event detail
+        run: echo "${{github.event}}"
       
       - name: filter for wandb command
         id: filter

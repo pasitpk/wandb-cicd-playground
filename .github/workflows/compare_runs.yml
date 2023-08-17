@@ -50,12 +50,12 @@ jobs:
               print(f'VAL_FOUND=false', file=f)
 
       - name: checkout repo
-        if:  steps.get-wandb-value.outcome == 'success' && steps.get-wandb-value.outputs.VAL_FOUND == 'true'
+        if: steps.get-wandb-value.outcome == 'success' && steps.get-wandb-value.outputs.VAL_FOUND == 'true'
         id: checkout-repo
         uses: actions/checkout@v3
 
       - name: install dependencies
-        if: steps.checkout-repo.outcom == 'success'
+        if: steps.checkout-repo.outcome == 'success'
         id: install-dependencies
         run: pip install -r requirements.txt
 

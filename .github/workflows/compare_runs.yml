@@ -28,8 +28,7 @@ jobs:
         WANDB_CMD: ${{ vars.WANDB_CMD }}
         BASELINE_TAG: ${{ vars.BASELINE_TAG }}
 
-        PR_REQ_COMMENT: ${{ github.event.pull_request.body }}
-        PR_COMMENT: ${{ github.event.comment.body }}
+        PR_COMMENT: ${{ github.event.comment.body || github.event.pull_request.body }}
 
       steps:
 
@@ -38,7 +37,7 @@ jobs:
       
       - name: filter for wandb command
         id: filter
-        if: contains(github.event.comment.body, env.WANDB_CMD)
+        if: contains(env.PR_COMMENT, env.WANDB_CMD)
         run: echo "wandb command detected"
 
       - name: Parse value from the wandb command
@@ -48,7 +47,7 @@ jobs:
         run: |
           import re, os
           command = os.environ['WANDB_CMD']
-          comment = os.environ['PR_COMMENT'] or os.environ['PR_REQ_COMMENT']
+          comment = os.environ['PR_COMMENT']
           match = re.search(f'{command}[\s+](\S+)', comment)
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
             if match:

@@ -15,10 +15,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    ENTITY = args['entity']
-    PROJECT = args['project']
-    RUN_ID = args['run_id']
-    BASELINE_TAG = args['baseline_tag']
+    ENTITY = args.entity
+    PROJECT = args.project
+    RUN_ID = args.run_id
+    BASELINE_TAG = args.baseline_tag
 
     project_path = f'{ENTITY}/{PROJECT}'
     run_path = f'{project_path}/{RUN_ID}'

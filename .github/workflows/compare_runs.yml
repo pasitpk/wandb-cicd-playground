@@ -1,0 +1,123 @@
+name: CompareRuns
+
+on: issue_comment
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+
+  compare-runs:
+      # this filters for only comments made on a pull request
+      if: (github.event.issue.pull_request != null)
+
+      runs-on: ubuntu-latest
+
+      env:
+
+        WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+
+        WANDB_ENTITY: ${{ vars.WANDB_ENTITY }}
+        WANDB_PROJECT: ${{ vars.WANDB_PROJECT }}
+        WANDB_CMD: ${{ vars.WANDB_CMD }}
+        BASELINE_TAG: ${{ vars.BASELINE_TAG }}
+
+        PR_COMMENT: ${{ github.event.comment.body }}
+
+      steps:
+      
+      - name: filter for wandb command
+        id: filter
+        if: contains(github.event.comment.body, env.WANDB_CMD)
+        run: echo "wandb command detected"
+
+      - name: Parse value from the wandb command
+        if: steps.filter.outcome == 'success'
+        id: get-wandb-value
+        shell: python
+        run: |
+          import re, os
+          command = os.environ['WANDB_CMD']
+          comment = os.environ['PR_COMMENT']
+          match = re.search(f'{command}[\s+](\S+)', comment)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            if match:
+              print(f'VAL_FOUND=true', file=f)
+              print(f'WANDB_VAL={match.group(1)}', file=f)
+            else:
+              print(f'VAL_FOUND=false', file=f)
+
+      - name: Create report for comparison
+        if:  steps.get-wandb-value.outcome == 'success' && steps.get-wandb-value.outputs.VAL_FOUND == 'true'
+        id: create-report
+        env:
+          WANDB_RUN_ID: ${{ steps.get-wandb-value.outputs.WANDB_VAL }}
+        shell: python
+        run: |
+          import os
+          import wandb
+          import wandb.apis.reports as wr
+
+          ENTITY = os.environ['WANDB_ENTITY']
+          PROJECT = os.environ['WANDB_PROJECT']
+          RUN_ID = os.environ['WANDB_RUN_ID']
+          BASELINE_TAG = os.environ['BASELINE_TAG']
+
+          project_path = f'{ENTITY}/{PROJECT}'
+          run_path = f'{project_path}/{RUN_ID}'
+
+          api = wandb.Api()
+
+          tags = [BASELINE_TAG]
+          baseline_runs = api.runs(project_path, 
+                              {"tags": {"$in": tags}})
+          
+          baseline_run_names = [r.name for r in baseline_runs]
+
+          cur_run = api.run(run_path)
+          cur_run_name = cur_run.name
+
+          all_run_names = baseline_run_names + [cur_run_name]
+
+          report = wr.Report(
+              entity=ENTITY,
+              project=PROJECT,
+              title='Compare Runs',
+              description="A demo of comparing runs programatically"
+          )  
+
+          pg = wr.PanelGrid(
+                  runsets=[
+                      wr.Runset(ENTITY, PROJECT, "Run Comparison").set_filters_with_python_expr(f"Name in {all_run_names}")
+                  ],
+                  panels=[
+                      wr.RunComparer(diff_only='split', layout={'w': 24, 'h': 15}),
+                  ]
+              )
+
+          report.blocks = report.blocks[:1] + [pg] + report.blocks[1:]
+          report.save()
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              print(f'WANDB_REPORT_URL={report.url}', file=f)
+
+      - name: Create a comment with report url
+        uses: actions/github-script@v6
+        if:  steps.create-report.outcome == 'success'
+        id: create-comment-with-report-url
+        with:
+          script: |
+            var msg = `👋 Hello!  You commented on this PR with a wandb value of \`${process.env.WANDB_VAL}\` \n Here is the link to the report \n ${process.env.WANDB_REPORT_URL}`
+            github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: msg
+              })
+        env:
+          WANDB_VAL: "${{ steps.get-magic-value.outputs.WANDB_VAL }}"
+          WANDB_REPORT_URL: "${{ steps.get-magic-value.outputs.WANDB_REPORT_URL }}"
+        
+          

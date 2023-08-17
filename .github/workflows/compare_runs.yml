@@ -15,7 +15,7 @@ jobs:
 
   compare-runs:
   
-      # if: github.event.issue.pull_request || (github.event_name == 'pull_request')
+      if: github.event.issue.pull_request || (github.event_name == 'pull_request')
 
       runs-on: ubuntu-latest
 

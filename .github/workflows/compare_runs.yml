@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [opened, edited, reopened]
   issue_comment:
-    types: [submitted, edited]
+    types: [created, edited]
 
 permissions:
   contents: read
